@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant</title>
+    <link rel="stylesheet" href="static\style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Voice Assistant</h1>
+        <button id="speak-btn">Speak</button>
+        <p id="response-text"></p>
+        <audio id="response-audio" controls></audio>
+    </div>
+
+    <script>
+        document.getElementById('speak-btn').addEventListener('click', function() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const text = event.results[0][0].transcript;
+                
+                fetch('/voice-assistant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('response-text').innerText = data.response;
+                    const audio = document.getElementById('response-audio');
+                    audio.src = data.audio_url;
+                    audio.play();
+                })
+                .catch(error => console.error('Error:', error));
+            };
+        });
+    </script>
+</body>
+</html>
